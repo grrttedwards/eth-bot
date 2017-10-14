@@ -27,7 +27,7 @@ class GDAX_Agent:
         ask = float(response['ask'])
         return {'price': price, 'bid': bid, 'ask': ask}
 
-    def update(self):
+    def update_and_push(self):
         info = self.__get_trade_info()
         title = '{0}: {1:.2f}'.format(self.product, info['price'])
         body = "Bid: {0:.2f}, Ask: {1:.2f}, Δ: {2:.2f}" \
@@ -35,10 +35,14 @@ class GDAX_Agent:
         self.pushbullet.push_note(title, body)
         self.last_price = info['price']
 
-def run():
-    agent = GDAX_Agent('ETH-USD')
-    while True:
-        agent.update()
-        time.sleep(3600)
+    def poll(self, interval):
+        while True:
+            self.update_and_push()
+            time.sleep(interval)
 
-run()
+
+if __name__ == "__main__":
+    MINUTES = 60
+    interval = 60 * MINUTES  # once an hour
+    agent = GDAX_Agent('ETH-USD')  # other options BTC-USD/anything on GDAX
+    agent.poll(interval)
