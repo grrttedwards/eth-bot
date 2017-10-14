@@ -1,1 +1,1 @@
-eth-bot
+gdax_agent
