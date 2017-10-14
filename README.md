@@ -9,3 +9,8 @@ Because I didn't want to, this is much simpler for me, and this gets pushed to a
  
 #### How use this 
 Edit the settings file with your Pushbullet API token. You could even monitor BTC on GDAX with it, just go set the agent product to 'BTC-USD'. 
+
+#### Todo:
+- I want to get more than one currency: cool yeah I'll do that
+- I want an alert when it changes more than [x]%: hmm sure
+- todo
