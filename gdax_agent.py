@@ -6,49 +6,52 @@ from pushbullet import Pushbullet
 
 class GDAX_Agent:
     """Interact and read trade information from GDAX"""
-    def __init__(self, product):
+    def __init__(self, *products):
         config = configparser.ConfigParser()
         config.read('./settings.ini')
 
         pushbullet_token = config['pushbullet']['api_key']
-        self.pushbullet = Pushbullet(pushbullet_token)
-        self.product = product
+        self.pushbullets = {product: Pushbullet(pushbullet_token) for product in products}
+        self.products = products
         self.pub_client = gdax.PublicClient()
-        self.last_price = 0
+        self.last_prices = {product: 0.0 for product in products}
 
-    def __percent_change(self, price):
-        if self.last_price:
-            return round((price - self.last_price) / self.last_price * 100, 2)
+    def __percent_change(self, price, last_price):
+        if last_price:
+            return round((price - last_price) / last_price * 100, 2)
         return 0
 
-    def __get_trade_info(self):
-        response = self.pub_client.get_product_ticker(self.product)
+    def __get_deltas(self, price, product):
+        last_price = self.last_prices[product]
+        delta_price = price - last_price
+        delta_percent = self.__percent_change(price, last_price)
+        return delta_price, delta_percent
+
+    def __get_trade_info(self, product):
+        response = self.pub_client.get_product_ticker(product)
         price = float(response['price'])
         bid = float(response['bid'])
         ask = float(response['ask'])
-        return {'price': price, 'bid': bid, 'ask': ask}
+        return price, bid, ask
 
-    def update_and_push(self):
-        info = self.__get_trade_info()
-        price = info['price']
-        bid = info['bid']
-        ask = info['ask']
-        delta_price = price - self.last_price
-        delta_percent = self.__percent_change(price)
+    def update_and_push(self, product):
+        price, bid, ask = self.__get_trade_info(product)
+        delta_price, delta_percent = self.__get_deltas(price, product)
 
-        title = f'{self.product}: ${price:.2f}'
+        title = f'{product}: ${price:.2f}'
         body = f"Bid: {bid:.2f}, Ask: {ask:.2f}, $Δ: {delta_price:.2f}, %Δ: {delta_percent:.2f}"
-        self.pushbullet.push_note(title, body)
-        self.last_price = price
+        self.pushbullets[product].push_note(title, body)
+        self.last_prices[product] = price
 
     def poll(self, interval):
         while True:
-            self.update_and_push()
-            time.sleep(5)
+            for product in self.products:
+                self.update_and_push(product)
+            time.sleep(interval)
 
 
 if __name__ == "__main__":
     MINUTES = 60
     interval = 60 * MINUTES  # once an hour
-    agent = GDAX_Agent('ETH-USD')  # other options BTC-USD/anything on GDAX
+    agent = GDAX_Agent('ETH-USD', 'BTC-USD')  # other options BTC-USD/anything on GDAX
     agent.poll(interval)
