@@ -8,9 +8,19 @@ I'm learning about the world of crypto, and figured why not start watching some 
 Because I didn't want to, this is much simpler for me, and this gets pushed to all my devices. 
  
 ### How use this 
-Edit the settings file with your Pushbullet API token. You could even monitor BTC on GDAX with it, just go set the agent product to 'BTC-USD'. 
+Edit `settings.ini` with your Pushbullet API token. You can monitor any currency on GDAX with it, just go set the agent product to the product string e.g. `'BTC-USD'`.
 
-If you want to get a few different currencies, just comma separate them i.e. 'ETH-USD', 'BTC-USD'
+If you want to get a few different currencies, just comma separate them when creating a GDAX_Agent e.g. `'ETH-USD', 'BTC-USD'`
+
+Running
+```
+python gdax-agent.py
+```
+
+### Requirements
+- Python 3.6 for the sweet string literal interpolation
+- `pip install -r requirements.txt` or `pip install requests gdax`
+
 
 ### Todo:
 - ~~I want to get more than one currency: cool yeah I'll do that~~ done!
