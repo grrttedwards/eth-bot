@@ -1,5 +1,6 @@
 import requests
 
+
 class Pushbullet:
     """Handles communication with Pushbullet"""
     PUSH_URL = 'https://api.pushbullet.com/v2/pushes'
