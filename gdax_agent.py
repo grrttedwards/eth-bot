@@ -50,7 +50,7 @@ class GDAX_Agent:
             time.sleep(interval)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     MINUTES = 60
     interval = 60 * MINUTES  # once an hour
     agent = GDAX_Agent('ETH-USD', 'BTC-USD')  # other options BTC-USD/anything on GDAX

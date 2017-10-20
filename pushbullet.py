@@ -1,4 +1,5 @@
 import requests
+import time
 
 
 class Pushbullet:
@@ -10,13 +11,25 @@ class Pushbullet:
         self.api_key = api_key
         self.last_push_iden = None
 
-    def __do_request(self, method, url, data=None, headers=None):
-        response = method(url, data=data, headers=headers)
-        if response.status_code == 401:
-            raise InvalidKeyError(response.content)
-        elif not response.ok:
-            raise PushbulletError(response.content)
-        return response
+    def __backoff(self):
+        for attempts in range(5):
+            # raise the power of exponential backoff
+            yield 5**attempts
+
+    def __do_request(self, request_method, url, data=None, headers=None):
+        backoff = self.__backoff()
+        for attempt in backoff:
+            try:
+                response = request_method(url, data=data, headers=headers)
+            except requests.exceptions.ConnectionError as e:
+                print(e)
+                print(f'Attempting {attempt}-second backoff...')
+                time.sleep(attempt)
+            if response.status_code == 401:
+                raise InvalidKeyError(response.content)
+            elif not response.ok:
+                raise PushbulletError(response.content)
+            return response
 
     def do_post(self, url, data, headers):
         """HTTP POST request to Pushbullet"""
